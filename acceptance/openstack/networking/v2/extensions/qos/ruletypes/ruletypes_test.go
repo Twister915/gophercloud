@@ -29,3 +29,19 @@ func TestListRuleTypes(t *testing.T) {
 
 	tools.PrintResource(t, ruleTypes)
 }
+
+func TestGetRuleType(t *testing.T) {
+	client, err := clients.NewNetworkV2Client()
+	if err != nil {
+		t.Fatalf("Unable to create a network client: %v", err)
+		return
+	}
+
+	rule, err := ruletypes.GetRuleType(client, "bandwidth_limit").Extract()
+	if err != nil {
+		t.Fatalf("Failed to get rule type by name: %v", err)
+		return
+	}
+
+	tools.PrintResource(t, rule)
+}

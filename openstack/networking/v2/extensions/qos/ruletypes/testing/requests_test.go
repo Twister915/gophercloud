@@ -39,3 +39,84 @@ func TestListRuleTypes(t *testing.T) {
 	expected := []ruletypes.RuleType{{Type: "bandwidth_limit"}, {Type: "dscp_marking"}, {Type: "minimum_bandwidth"}}
 	th.AssertDeepEquals(t, expected, rules)
 }
+
+func TestGetRuleTypes(t *testing.T) {
+	th.SetupHTTP()
+	defer th.TeardownHTTP()
+
+	th.Mux.HandleFunc("/qos/rule-types/bandwidth_limit", func(w http.ResponseWriter, r *http.Request) {
+		th.TestMethod(t, r, "GET")
+		th.TestHeader(t, r, "X-Auth-Token", fake.TokenID)
+
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		fmt.Fprint(w, GetRuleTypeResponse)
+	})
+
+	ruleType, err := ruletypes.GetRuleType(fake.ServiceClient(), "bandwidth_limit").Extract()
+	if err != nil {
+		t.Error("Failed to get rule type: %v", err)
+		return
+	}
+
+	expected := &ruletypes.RuleTypeSpec{
+		Type: "bandwidth_limit",
+		Drivers: []ruletypes.RuleDriver{
+			{
+				Name: "openvswitch",
+				SupportedParameters: []ruletypes.RuleDriverParameter{
+					{
+						Name: "max_kbps",
+						Type: "range",
+						Values: map[string]interface{}{
+							"end": 2147483647.0,
+							"start": 0.0,
+						},
+					},
+					{
+						Name: "direction",
+						Type: "choices",
+						Values: []string{"ingress", "egress"},
+					},
+					{
+						Name: "max_burst_kbps",
+						Type: "range",
+						Values: map[string]interface{}{
+							"end": 2147483647.0,
+							"start": 0.0,
+						},
+					},
+				},
+			},
+			{
+				Name: "linuxbridge",
+				SupportedParameters: []ruletypes.RuleDriverParameter{
+					{
+						Name: "max_kbps",
+						Type: "range",
+						Values: map[string]interface{}{
+							"end": 2147483647.0,
+							"start": 0.0,
+						},
+					},
+					{
+						Name: "direction",
+						Type: "choices",
+						Values: []string{"ingress", "egress"},
+					},
+					{
+						Name: "max_burst_kbps",
+						Type: "range",
+						Values: map[string]interface{}{
+							"end": 2147483647.0,
+							"start": 0.0,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	th.AssertDeepEquals(t, expected, ruleType)
+}
