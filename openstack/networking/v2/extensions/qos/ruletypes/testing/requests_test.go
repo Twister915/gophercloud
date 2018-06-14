@@ -56,7 +56,7 @@ func TestGetRuleTypes(t *testing.T) {
 
 	ruleType, err := ruletypes.GetRuleType(fake.ServiceClient(), "bandwidth_limit").Extract()
 	if err != nil {
-		t.Error("Failed to get rule type: %v", err)
+		t.Errorf("Failed to get rule type: %v", err)
 		return
 	}
 
